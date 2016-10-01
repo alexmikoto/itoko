@@ -6,8 +6,10 @@
 </head>
 <body>
     <h1>Erio cabinet</h1>
-    <form method="post" action="{{ url_for('upload_file') }}">
-        <input type="file"/>
+    <h3>{{ get_flashed_messages() }}</h3>
+    <form method="post" enctype="multipart/form-data" action="{{ url_for('upload_file') }}">
+        <input type="file" name="file"/>
+        <input type="submit" value="Upload"/>
     </form>
 </body>
 </html>
