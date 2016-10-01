@@ -1,12 +1,12 @@
+import base64
 import os
 import tempfile
 import time
-import base64
-
 from io import BytesIO
+
 from flask import abort, Flask, flash, redirect, request, render_template, send_file, url_for
 
-from crypto.aes_cipher import AESCipher
+from erio_cabinet.crypto import AESCipher
 
 app = Flask(__name__, static_folder='static')
 app.config.update(
@@ -26,11 +26,11 @@ def home_page():
 @app.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
-        flash('No file part')
+        flash('No file part', category='error')
         return redirect(url_for('home_page'))
     file = request.files['file']
     if file.filename == '':
-        flash('No selected file')
+        flash('No file selected', category='error')
         return redirect(url_for('home_page'))
 
     key = base64.urlsafe_b64encode(os.urandom(16))

@@ -1,0 +1,36 @@
+body {
+    margin: 0;
+}
+
+h1, h3, h5 {
+    font-family: sans-serif;
+    text-align: center;
+    color: lightskyblue;
+}
+
+form {
+    max-width: 800px;
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.flashes {
+    list-style-type: none;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+    width: 100%;
+}
+
+.flashes > li {
+    font-family: sans-serif;
+    font-weight: bold;
+    padding-top: 5px;
+    padding-bottom: 5px;
+}
+
+.flashes > .error {
+    background-color: red;
+    color: whitesmoke;
+}
