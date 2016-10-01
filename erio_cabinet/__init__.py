@@ -56,8 +56,12 @@ def serve_file(filename):
     full_filename = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     key = request.args.get('key')
 
-    if not os.path.exists(full_filename) or not key:
+    if not os.path.exists(full_filename):
         abort(404)
+        return
+
+    if not key:
+        abort(403)
         return
 
     key = key.encode('utf-8')
