@@ -1,4 +1,5 @@
 import base64
+import magic
 import os
 import tempfile
 import time
@@ -6,9 +7,9 @@ from io import BytesIO
 
 from flask import abort, Flask, flash, redirect, request, render_template, send_file, url_for
 
-from erio_cabinet.crypto import AESCipher
+from erio_cabinet.crypto import AESCipher, AESCipherException
 
-app = Flask(__name__, static_folder='static')
+app = Flask(__name__, static_folder='static', static_url_path='')
 app.config.update(
     SITE_URL='http://localhost:5000',
     UPLOAD_FOLDER=tempfile.gettempdir(),
@@ -66,10 +67,11 @@ def serve_file(filename):
     with open(full_filename, 'rb') as f:
         try:
             decrypted = cipher.decrypt(f.read())
+            mimetype = magic.from_buffer(decrypted, mime=True)
             io = BytesIO(decrypted)
-            return send_file(io)
-        except IOError:
-            abort(404)
+            return send_file(io, mimetype=mimetype)
+        except AESCipherException:
+            abort(403)
 
 
 if __name__ == '__main__':

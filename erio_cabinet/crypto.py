@@ -1,4 +1,5 @@
 import os
+from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
@@ -12,6 +13,10 @@ BLOCK_SIZE = 16
 ITERATION_COUNT = 100000
 
 backend = default_backend()
+
+
+class AESCipherException(Exception):
+    pass
 
 
 class AESCipher:
@@ -63,9 +68,12 @@ class AESCipher:
         cipher_key, hmac_key = derived_key[:KEY_LENGTH], derived_key[-KEY_LENGTH:]
 
         # Check MAC over encrypted text
-        h = HMAC(hmac_key, hashes.SHA256(), backend=backend)
-        h.update(encrypted)
-        h.verify(hmac)
+        try:
+            h = HMAC(hmac_key, hashes.SHA256(), backend=backend)
+            h.update(encrypted)
+            h.verify(hmac)
+        except InvalidSignature as e:
+            raise AESCipherException(e)
 
         nonce, encrypted = encrypted[:BLOCK_SIZE], encrypted[BLOCK_SIZE:]
 
