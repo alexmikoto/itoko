@@ -15,7 +15,7 @@ app.config.update(
     MAX_CONTENT_LENGTH=256 * 1024 * 1024,
     SECRET_KEY=os.urandom(32)
 )
-app.config.from_pyfile('config.cfg', silent=True)
+app.config.from_envvar('ERIO_CABINET_CONFIG', silent=True)
 
 
 @app.route('/')
