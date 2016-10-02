@@ -1,13 +1,12 @@
-import base64
 import magic
 import os
 import tempfile
-import time
 from io import BytesIO
 
 from flask import abort, Flask, flash, make_response, redirect, request, render_template, send_file, url_for
 
-from erio_cabinet.crypto import AESCipher, AESCipherException
+from erio_cabinet.crypto import AESCipher, AESCipherException, generate_key
+from erio_cabinet.files import concat_file, split_file, generate_filename
 
 ATTACHMENT_MIMETYPES = ['text/html']
 
@@ -36,25 +35,20 @@ def upload_file():
         flash('No file selected', category='error')
         return redirect(url_for('home_page'))
 
-    key = base64.urlsafe_b64encode(os.urandom(18))
-
-    filename = file.filename
-    timestamp = int(time.time() * 10000000)
-
+    key = generate_key()
     cipher = AESCipher(key)
-    # Save the original filename in the end of the encrypted file
-    encrypted = cipher.encrypt(b''.join([file.read(),
-                                         filename.encode('utf-8'),
-                                         '{:06d}'.format(len(filename)).encode('utf-8')]))
+    encrypted = cipher.encrypt(concat_file(file))
 
-    new_filename = str(timestamp)
-    full_filename = os.path.join(app.config['UPLOAD_FOLDER'], new_filename)
+    filename = generate_filename()
+    full_filename = os.path.join(app.config['UPLOAD_FOLDER'], filename)
 
     with open(full_filename, 'wb+') as f:
         f.write(encrypted)
 
-    return render_template('upload_successful.html', site_url=app.config['SITE_URL'],
-                           filename=new_filename, key=key.decode('utf-8'))
+    file_url = '{site_url}/uploads/{filename}?key={key}'.format(site_url=app.config['SITE_URL'],
+                                                                filename=filename, key=key.decode('utf-8'))
+
+    return render_template('upload_successful.html', file_url=file_url)
 
 
 @app.route('/uploads/<filename>')
@@ -70,20 +64,11 @@ def serve_file(filename):
         abort(403)
         return
 
-    key = key.encode('utf-8')
-
-    cipher = AESCipher(key)
+    cipher = AESCipher(key.encode('utf-8'))
 
     with open(full_filename, 'rb') as f:
         try:
-            decrypted = cipher.decrypt(f.read())
-
-            # Split up encrypted file and filename
-            filename_length = int(decrypted[-6:])
-            decrypted, filename = decrypted[:-(6+filename_length)], decrypted[-(6+filename_length):-6]
-
-            # Make filename a string
-            filename = filename.decode('utf-8')
+            decrypted, filename = split_file(cipher.decrypt(f.read()))
 
             # Guess MIME type
             mimetype = magic.from_buffer(decrypted, mime=True)

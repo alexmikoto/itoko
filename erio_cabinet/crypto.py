@@ -1,3 +1,4 @@
+import base64
 import os
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.backends import default_backend
@@ -15,15 +16,22 @@ ITERATION_COUNT = 100000
 backend = default_backend()
 
 
+def generate_key() -> bytes:
+    """ Generates a random key by passing /dev/urandom through URL-safe base64 encoding """
+    return base64.urlsafe_b64encode(os.urandom(18))
+
+
 class AESCipherException(Exception):
     pass
 
 
 class AESCipher:
-    def __init__(self, key):
+    def __init__(self, key: bytes):
         self.key = key
 
-    def encrypt(self, plaintext):
+    def encrypt(self, plaintext: bytes) -> bytes:
+        """ Encrypts-then-HMACs plaintext with AES in CTR mode. The key is derived through PBKDF2 over the provided key.
+        Returns a bundle including ciphertext, nonce, HMAC and PBKDF2 salt. """
         salt = os.urandom(SALT_SIZE)
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256,
@@ -52,7 +60,9 @@ class AESCipher:
         # Return concat
         return b''.join([encrypted, hmac, salt])
 
-    def decrypt(self, encrypted):
+    def decrypt(self, encrypted: bytes) -> bytes:
+        """ Decrypts a bundle using the provided key. The PBKDF2 salt is taken from the bundle.
+         If the provided key and salt fail to verify the HMAC AESCipherException is raised. """
         encrypted, hmac, salt = encrypted[:-(SALT_SIZE + hashes.SHA256.digest_size)],\
                                 encrypted[-(SALT_SIZE + hashes.SHA256.digest_size): -SALT_SIZE],\
                                 encrypted[-SALT_SIZE:]

@@ -2,9 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Success!</title>
+    <style>
+        a {
+            font-family: sans-serif;
+        }
+    </style>
 </head>
 <body>
-    {{ site_url }}/uploads/{{ filename }}?key={{ key }}
+    <a href="{{ file_url }}">{{ file_url }}</a>
 </body>
 </html>
