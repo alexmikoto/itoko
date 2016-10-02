@@ -7,8 +7,9 @@ FILENAME_LENGTH_PADDING = 6
 
 def concat_file(file: FileStorage) -> bytes:
     """ Returns the bytes content of a FileStorage object concatenated with its filename """
-    return b''.join([file.read(), file.filename.encode('utf-8'),
-                     ('{:0' + str(FILENAME_LENGTH_PADDING) + 'd}').format(len(file.filename)).encode('utf-8')])
+    filename = file.filename.encode('utf-8')
+    return b''.join([file.read(), filename,
+                     ('{:0' + str(FILENAME_LENGTH_PADDING) + 'd}').format(len(filename)).encode('utf-8')])
 
 
 def split_file(raw_file: bytes) -> (bytes, str):
