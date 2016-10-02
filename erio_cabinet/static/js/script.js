@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
         xhr.upload.addEventListener('progress', function (evt) {
             if (evt.lengthComputable) {
-                progress.value = evt.loaded / evt.total * 100;
+                progress.value = evt.loaded * 100 / evt.total;
             }
         });
         xhr.addEventListener('load', function (evt) {

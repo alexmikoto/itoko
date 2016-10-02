@@ -67,3 +67,16 @@ p.error {
     color: green;
     text-decoration: none;
 }
+
+progress {
+    width: 500px;
+    height: 1em;
+}
+
+progress::-moz-progress-bar {
+    background-color: lightskyblue;
+}
+
+progress::-webkit-progress-value {
+    background-color: lightskyblue;
+}
