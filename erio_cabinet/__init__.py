@@ -36,7 +36,7 @@ def upload_file():
         flash('No file selected', category='error')
         return redirect(url_for('home_page'))
 
-    key = base64.urlsafe_b64encode(os.urandom(16))
+    key = base64.urlsafe_b64encode(os.urandom(18))
 
     filename = file.filename
     timestamp = int(time.time() * 10000000)
