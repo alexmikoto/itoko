@@ -2,6 +2,7 @@ import magic
 import os
 import tempfile
 from io import BytesIO
+from urllib.parse import quote
 
 from flask import abort, Flask, flash, jsonify, make_response, redirect, request, render_template, send_file, url_for
 
@@ -82,13 +83,18 @@ def serve_file(filename):
 
             # Add filename, set as attachment if not allowed inline
             if mimetype in ATTACHMENT_MIMETYPES:
-                response.headers['Content-Disposition'] = 'attachment; filename="{filename}"'.format(filename=filename)
+                response.headers['Content-Disposition'] = 'attachment; filename="{filename}"; ' \
+                                                          'filename*=UTF-8\'\'{filename}' \
+                                                              .format(filename=quote(filename))
             else:
-                response.headers['Content-Disposition'] = 'inline; filename="{filename}"'.format(filename=filename)
+                response.headers['Content-Disposition'] = 'inline; filename="{filename}"; ' \
+                                                          'filename*=UTF-8\'\'{filename}' \
+                                                              .format(filename=quote(filename))
             return response
         except AESCipherException:
             abort(403)
 
 
 if __name__ == '__main__':
+    app.debug = True  # Assume debugging
     app.run()
