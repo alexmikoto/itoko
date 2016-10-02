@@ -20,7 +20,6 @@ document.addEventListener('DOMContentLoaded', function () {
         let file = fileForm.querySelector('#file-select').files[0];
 
         let flashes = document.querySelector('.flashes');
-        console.log(file);
         if (!file) {
             if (!flashes || !flashes.querySelector('.error')) {
                 let node = document.createElement('div');
@@ -53,17 +52,18 @@ document.addEventListener('DOMContentLoaded', function () {
         let xhr = new XMLHttpRequest();
         let formData = new FormData();
         formData.append('file', file);
-        xhr.addEventListener('load', function (evt) {
-            let resp = JSON.parse(xhr.responseText);
-            fileForm.innerHTML = `<a href="${resp.url}">${resp.url}</a>`
-        });
-        xhr.addEventListener('error', function (evt) {
+        xhr.upload.addEventListener('error', function (evt) {
             fileForm.innerHTML = '<p class="error">Upload failed.</p>'
         });
-        xhr.addEventListener('progress', function (evt) {
+        xhr.upload.addEventListener('progress', function (evt) {
             if (evt.lengthComputable) {
-                console.log(evt.loaded / evt.total);
                 progress.value = evt.loaded / evt.total;
+            }
+        });
+        xhr.addEventListener('load', function (evt) {
+            if (xhr.status < 300) {
+                let resp = JSON.parse(xhr.responseText);
+                fileForm.innerHTML = `<a href="${resp.url}">${resp.url}</a>`
             }
         });
 
