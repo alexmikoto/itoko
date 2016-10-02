@@ -3,10 +3,11 @@ import os
 import tempfile
 from io import BytesIO
 
-from flask import abort, Flask, flash, make_response, redirect, request, render_template, send_file, url_for
+from flask import abort, Flask, flash, jsonify, make_response, redirect, request, render_template, send_file, url_for
 
 from erio_cabinet.crypto import AESCipher, AESCipherException, generate_key
 from erio_cabinet.files import concat_file, split_file, generate_filename
+from erio_cabinet.util import request_wants_json
 
 ATTACHMENT_MIMETYPES = ['text/html']
 
@@ -48,6 +49,8 @@ def upload_file():
     file_url = '{site_url}/u/{filename}?key={key}'.format(site_url=app.config['SITE_URL'],
                                                           filename=filename, key=key.decode('utf-8'))
 
+    if request_wants_json():
+        return jsonify(url=file_url)
     return render_template('upload_successful.html', file_url=file_url)
 
 

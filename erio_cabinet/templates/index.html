@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Erio Cabinet</title>
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+    <script type="text/javascript" src="{{ url_for('static', filename='js/script.js') }}"></script>
 </head>
 <body>
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -18,8 +19,12 @@
     {% endwith %}
     <h1>Erio Cabinet</h1>
     <form method="post" enctype="multipart/form-data" action="{{ url_for('upload_file') }}">
-        <input type="file" name="file"/>
-        <input type="submit" value="Upload"/>
+        <div id="form-file">
+            <input id="file-select" type="file" name="file"/>
+        </div>
+        <div id="form-submit">
+            <input id="btn-submit" type="submit" value="Upload"/>
+        </div>
     </form>
     <footer>
         This site is in an alpha state, anything could happen.<br/>

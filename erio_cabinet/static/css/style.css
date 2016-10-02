@@ -46,7 +46,24 @@ footer {
     padding-bottom: 5px;
 }
 
+p.error {
+    color: red;
+    font-weight: bold;
+}
+
 .flashes > .error {
     background-color: red;
     color: whitesmoke;
+}
+
+#form-file, #form-submit, .form-upload {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.form-upload > a {
+    font-family: sans-serif;
+    font-size: 0.8em;
+    color: green;
+    text-decoration: none;
 }
