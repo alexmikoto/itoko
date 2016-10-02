@@ -5,9 +5,11 @@ import tempfile
 import time
 from io import BytesIO
 
-from flask import abort, Flask, flash, redirect, request, render_template, send_file, url_for
+from flask import abort, Flask, flash, make_response, redirect, request, render_template, send_file, url_for
 
 from erio_cabinet.crypto import AESCipher, AESCipherException
+
+ATTACHMENT_MIMETYPES = ['text/html']
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 app.config.update(
@@ -36,12 +38,16 @@ def upload_file():
 
     key = base64.urlsafe_b64encode(os.urandom(16))
 
+    filename = file.filename
+    timestamp = int(time.time() * 10000000)
+
     cipher = AESCipher(key)
-    encrypted = cipher.encrypt(file.read())
+    # Save the original filename in the end of the encrypted file
+    encrypted = cipher.encrypt(b''.join([file.read(),
+                                         filename.encode('utf-8'),
+                                         '{:06d}'.format(len(filename)).encode('utf-8')]))
 
-    filename, extension = os.path.splitext(file.filename)
-    new_filename = str(time.time()) + extension
-
+    new_filename = str(timestamp)
     full_filename = os.path.join(app.config['UPLOAD_FOLDER'], new_filename)
 
     with open(full_filename, 'wb+') as f:
@@ -71,9 +77,26 @@ def serve_file(filename):
     with open(full_filename, 'rb') as f:
         try:
             decrypted = cipher.decrypt(f.read())
+
+            # Split up encrypted file and filename
+            filename_length = int(decrypted[-6:])
+            decrypted, filename = decrypted[:-(6+filename_length)], decrypted[-(6+filename_length):-6]
+
+            # Make filename a string
+            filename = filename.decode('utf-8')
+
+            # Guess MIME type
             mimetype = magic.from_buffer(decrypted, mime=True)
+
             io = BytesIO(decrypted)
-            return send_file(io, mimetype=mimetype)
+            response = make_response(send_file(io, mimetype=mimetype))
+
+            # Add filename, set as attachment if not allowed inline
+            if mimetype in ATTACHMENT_MIMETYPES:
+                response.headers['Content-Disposition'] = 'attachment; filename="{filename}"'.format(filename=filename)
+            else:
+                response.headers['Content-Disposition'] = 'inline; filename="{filename}"'.format(filename=filename)
+            return response
         except AESCipherException:
             abort(403)
 
