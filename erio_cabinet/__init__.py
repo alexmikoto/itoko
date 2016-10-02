@@ -45,13 +45,13 @@ def upload_file():
     with open(full_filename, 'wb+') as f:
         f.write(encrypted)
 
-    file_url = '{site_url}/uploads/{filename}?key={key}'.format(site_url=app.config['SITE_URL'],
-                                                                filename=filename, key=key.decode('utf-8'))
+    file_url = '{site_url}/u/{filename}?key={key}'.format(site_url=app.config['SITE_URL'],
+                                                          filename=filename, key=key.decode('utf-8'))
 
     return render_template('upload_successful.html', file_url=file_url)
 
 
-@app.route('/uploads/<filename>')
+@app.route('/u/<filename>')
 def serve_file(filename):
     full_filename = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     key = request.args.get('key')
