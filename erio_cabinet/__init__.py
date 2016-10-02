@@ -43,6 +43,7 @@ def upload_file():
     filename = generate_filename()
     full_filename = os.path.join(app.config['UPLOAD_FOLDER'], filename)
 
+    os.makedirs(os.path.dirname(full_filename), exist_ok=True)
     with open(full_filename, 'wb+') as f:
         f.write(encrypted)
 
