@@ -1,11 +1,5 @@
 'use strict';
 
-function createNode(html) {
-    var node = document.createElement('div');
-    node.outerHTML = html;
-    return node;
-}
-
 document.addEventListener('DOMContentLoaded', function () {
     const body = document.querySelector('body');
     const title = document.querySelector('h1');
