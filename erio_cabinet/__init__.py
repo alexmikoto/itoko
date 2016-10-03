@@ -37,9 +37,7 @@ def upload_file():
         return redirect(url_for('home_page'))
 
     file = request.files['file']
-    encrypt = request.form.get('encrypt')
-    if encrypt:
-        encrypt = encrypt in ['1', 'true', 'on']  # Hacky way to check if the string contained is a true value.
+    encrypt = request.form.get('encrypt') in ['1', 'true', 'on']  # Hacky way to check if the string contained is a true value.
 
     if file.filename == '':
         flash('No file selected', category='error')
@@ -51,9 +49,8 @@ def upload_file():
         key = generate_key()
         cipher = AESCipher(key)
         file = cipher.encrypt(file)
-        file = mark_file(file, True)
-    else:
-        file = mark_file(file, False)
+    
+    file = mark_file(file, encrypt)  # Encryption mark
 
     filename = generate_filename()
     full_filename = os.path.join(app.config['UPLOAD_FOLDER'], filename)
