@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function () {
         evt.preventDefault();
         let fileForm = document.querySelector('#form-file');
         let file = fileForm.querySelector('#file-select').files[0];
+        let encrypt = fileForm.querySelector('#opt-encrypt').checked;
 
         let flashes = document.querySelector('.flashes');
         if (!file) {
@@ -46,6 +47,7 @@ document.addEventListener('DOMContentLoaded', function () {
         let xhr = new XMLHttpRequest();
         let formData = new FormData();
         formData.append('file', file);
+        formData.append('encrypt', encrypt);
         xhr.upload.addEventListener('error', function (evt) {
             fileForm.innerHTML = '<p class="error">Upload failed.</p>'
         });

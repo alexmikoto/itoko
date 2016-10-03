@@ -21,6 +21,16 @@ form {
     margin-right: auto;
 }
 
+label {
+    font-family: sans-serif;
+    font-size: 0.8em;
+    vertical-align: middle;
+}
+
+label > input {
+    vertical-align: middle;
+}
+
 footer {
     width: 100%;
     font-family: sans-serif;

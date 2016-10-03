@@ -1,6 +1,10 @@
 from flask import request
 
 
+class BadFileException(Exception):
+    pass
+
+
 def request_wants_json():
     best = request.accept_mimetypes \
         .best_match(['application/json', 'text/html'])

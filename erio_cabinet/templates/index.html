@@ -21,6 +21,7 @@
     <form method="post" enctype="multipart/form-data" action="{{ url_for('upload_file') }}">
         <div id="form-file">
             <input id="file-select" type="file" name="file"/>
+            <label for="opt-encrypt"><input id="opt-encrypt" type="checkbox" name="encrypt"/> Encrypt</label>
         </div>
         <div id="form-submit">
             <input id="btn-submit" type="submit" value="Upload"/>

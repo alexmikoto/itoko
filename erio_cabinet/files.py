@@ -2,7 +2,12 @@ import time
 
 from werkzeug.datastructures import FileStorage
 
+# TIMESTAMP_PRECISION = 10000000
+TIMESTAMP_PRECISION = 1000
 FILENAME_LENGTH_PADDING = 6
+MARK_SIZE = 1
+ENCRYPTED_MARK = b'1'
+UNENCRYPTED_MARK = b'0'
 
 
 def concat_file(file: FileStorage) -> bytes:
@@ -22,4 +27,15 @@ def split_file(raw_file: bytes) -> (bytes, str):
 def generate_filename() -> str:
     """ Generates a filename """
     # Use timestamp as filename
-    return str(int(time.time() * 10000000))
+    return str(int(time.time() * TIMESTAMP_PRECISION))
+
+
+def mark_file(file: bytes, encrypted: bool) -> bytes:
+    """ Adds a magic number to the file marking it as encrypted or unencrypted """
+    return (ENCRYPTED_MARK if encrypted else UNENCRYPTED_MARK) + file
+
+
+def unmark_file(raw_file: bytes) -> (bytes, bool):
+    """ Removes the magic number from the file, and returns the file and its encrypted status """
+    magic_number, file = raw_file[:MARK_SIZE], raw_file[MARK_SIZE:]
+    return file, magic_number == ENCRYPTED_MARK
