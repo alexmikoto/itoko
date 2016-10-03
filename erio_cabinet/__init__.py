@@ -22,7 +22,7 @@ app.config.update(
 app.config.from_envvar('ERIO_CABINET_CONFIG', silent=True)
 
 # Make the folder if it doesn't exist
-os.makedirs(os.path.dirname(app.config['UPLOAD_FOLDER']), exist_ok=True)
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 
 @app.route('/')
