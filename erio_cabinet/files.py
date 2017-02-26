@@ -4,7 +4,7 @@ from werkzeug.datastructures import FileStorage
 
 # TIMESTAMP_PRECISION = 10000000
 TIMESTAMP_PRECISION = 1000
-FILENAME_LENGTH_PADDING = 6
+FILENAME_LENGTH_PADDING = 6  # More than enough for almost every file system
 MARK_SIZE = 1
 ENCRYPTED_MARK = b'1'
 UNENCRYPTED_MARK = b'0'

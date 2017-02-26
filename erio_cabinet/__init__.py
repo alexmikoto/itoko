@@ -37,7 +37,9 @@ def upload_file():
         return redirect(url_for('home_page'))
 
     file = request.files['file']
-    encrypt = request.form.get('encrypt') in ['1', 'true', 'on']  # Hacky way to check if the string contained is a true value.
+    # Hacky way to check if the string contained is a true value.
+    encrypt = request.form.get('encrypt') in ['1', 'true', 'on']
+    permanent = request.form.get('permanent') in ['1', 'true', 'on']
 
     if file.filename == '':
         flash('No file selected', category='error')
@@ -53,7 +55,12 @@ def upload_file():
     file = mark_file(file, encrypt)  # Encryption mark
 
     filename = generate_filename()
-    full_filename = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+    if permanent:
+        full_filename = os.path.join(app.config['PERMANENT_UPLOAD_FOLDER'], filename)
+    else:
+        full_filename = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
 
     with open(full_filename, 'wb+') as f:
         f.write(file)
@@ -71,7 +78,10 @@ def upload_file():
 
 @app.route('/u/<filename>')
 def serve_file(filename):
-    full_filename = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    # Probe permanent folder first, then the temporary folder
+    full_filename = os.path.join(app.config['PERMANENT_UPLOAD_FOLDER'], filename)
+    if not os.path.exists(full_filename):
+        full_filename = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     key = request.args.get('key')
 
     if not os.path.exists(full_filename):

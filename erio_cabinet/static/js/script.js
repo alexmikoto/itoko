@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function () {
         let fileForm = document.querySelector('#form-file');
         let file = fileForm.querySelector('#file-select').files[0];
         let encrypt = fileForm.querySelector('#opt-encrypt').checked;
+        let permanent = fileForm.querySelector('#opt-permanent').checked;
 
         let flashes = document.querySelector('.flashes');
         if (!file) {
@@ -48,6 +49,7 @@ document.addEventListener('DOMContentLoaded', function () {
         let formData = new FormData();
         formData.append('file', file);
         formData.append('encrypt', encrypt);
+        formData.append('permanent', permanent);
         xhr.upload.addEventListener('error', function (evt) {
             fileForm.innerHTML = '<p class="error">Upload failed.</p>'
         });
