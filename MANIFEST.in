@@ -1,0 +1,2 @@
+graft src/erio_cabinet/templates
+graft src/erio_cabinet/static
