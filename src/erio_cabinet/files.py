@@ -200,8 +200,8 @@ class UploadedRawFile(UploadedFile):
         """
         encrypted_payload = Encryptor(key).encrypt(self.payload)
         return UploadedEncryptedFile(
-            encrypted_payload,
-            self.filename
+            filename=self.filename,
+            data=encrypted_payload
         )
 
     def decrypt(self, key: bytes) -> 'UploadedFile':
@@ -211,8 +211,8 @@ class UploadedRawFile(UploadedFile):
 class UploadedEncryptedFile(UploadedFile):
     __slots__ = ('data',)
 
-    def __init__(self, data: bytes, filename: str):
-        super().__init__(data, file_from_file_storage())
+    def __init__(self, filename: str, data: bytes):
+        super().__init__(filename, data)
         self.data = data
 
     @property
