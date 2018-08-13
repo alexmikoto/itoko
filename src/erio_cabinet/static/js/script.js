@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
         let file = fileForm.querySelector('#file-select').files[0];
         let encrypt = fileForm.querySelector('#opt-encrypt').checked;
         let permanent = fileForm.querySelector('#opt-permanent').checked;
+        let shorten = fileForm.querySelector('#opt-shorten').checked;
 
         let flashes = document.querySelector('.flashes');
         if (!file) {
@@ -50,6 +51,7 @@ document.addEventListener('DOMContentLoaded', function () {
         formData.append('file', file);
         formData.append('encrypt', encrypt);
         formData.append('permanent', permanent);
+        formData.append('shorten', shorten);
         xhr.upload.addEventListener('error', function (evt) {
             fileForm.innerHTML = '<p class="error">Upload failed.</p>'
         });
@@ -61,7 +63,12 @@ document.addEventListener('DOMContentLoaded', function () {
         xhr.addEventListener('load', function (evt) {
             if (xhr.status < 300) {
                 let resp = JSON.parse(xhr.responseText);
-                fileForm.innerHTML = `<a href="${resp.url}">${resp.url}</a>`
+                if (resp.short_url) {
+                    fileForm.innerHTML = `<a href="${resp.short_url}">${resp.short_url}</a>`
+                }
+                else {
+                    fileForm.innerHTML = `<a href="${resp.url}">${resp.url}</a>`
+                }
             }
         });
 

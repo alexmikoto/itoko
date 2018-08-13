@@ -1,5 +1,7 @@
 erio_cabinet.ini
 config.cfg
 __pycache__/
+env/
+venv/
 .idea/
 *.iml

@@ -1,4 +1,6 @@
-from erio_cabinet import app as application
+from erio_cabinet import make_app
+
+application = make_app()
 
 if __name__ == '__main__':
     application.run()
