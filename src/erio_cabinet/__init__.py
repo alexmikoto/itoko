@@ -6,7 +6,7 @@ from flask import Flask
 from erio_cabinet.db import db, init_db
 from erio_cabinet.routes import main_blueprint
 
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 
 def make_app():

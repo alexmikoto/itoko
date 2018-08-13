@@ -14,9 +14,6 @@ from erio_cabinet.shorten import shorten_filename, find_shortened
 
 main_blueprint = Blueprint('main', __name__, template_folder='templates')
 
-# TODO: Delete me when done on Windows
-magic = magic.Magic(magic_file='c:\\Windows\\System32\\magic.mgc', mime=True)
-
 
 @main_blueprint.route('/')
 def home_page():
@@ -116,7 +113,7 @@ def serve_file(filename=None, short_filename=None):
         except DecryptionError:
             return abort(403)
 
-    mimetype = magic.from_buffer(file.data)  # , mime=True)  TODO: put this back
+    mimetype = magic.from_buffer(file.data, mime=True)
     io = BytesIO(file.data)
     response = make_response(send_file(io, mimetype=mimetype))
 
