@@ -6,7 +6,7 @@ from setuptools import setup, find_packages
 with io.open("README.md", "rt", encoding="utf8") as f:
     readme = f.read()
 
-with io.open("src/erio_cabinet/__init__.py", "rt", encoding="utf8") as f:
+with io.open("src/itoko/__init__.py", "rt", encoding="utf8") as f:
     version = re.search(r"__version__ = \"(.*?)\"", f.read()).group(1)
 
 install_requires = [

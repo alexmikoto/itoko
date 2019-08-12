@@ -3,8 +3,8 @@ import tempfile
 
 from flask import Flask
 
-from erio_cabinet.db import db, init_db
-from erio_cabinet.routes import main_blueprint
+from itoko.db import db, init_db
+from itoko.routes import main_blueprint
 
 __version__ = "0.2.2"
 

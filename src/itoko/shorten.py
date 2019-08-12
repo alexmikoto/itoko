@@ -1,6 +1,6 @@
 from typing import Optional
 
-from erio_cabinet.db import db
+from itoko.db import db
 
 
 def shorten_filename(filename: str) -> str:

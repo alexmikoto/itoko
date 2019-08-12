@@ -7,10 +7,10 @@ from flask import (
     request, render_template, send_file, url_for
 )
 
-from erio_cabinet.crypto import generate_key, DecryptionError
-from erio_cabinet.files import file_from_file_storage, read_file
-from erio_cabinet.util import request_wants_json, get_content_disposition
-from erio_cabinet.shorten import shorten_filename, find_shortened
+from itoko.crypto import generate_key, DecryptionError
+from itoko.files import file_from_file_storage, read_file
+from itoko.util import request_wants_json, get_content_disposition
+from itoko.shorten import shorten_filename, find_shortened
 
 main_blueprint = Blueprint('main', __name__, template_folder='templates')
 

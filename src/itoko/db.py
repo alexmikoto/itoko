@@ -1,4 +1,4 @@
-from erio_cabinet.ext.flask_sqlite3 import SQLite3
+from itoko.ext.flask_sqlite3 import SQLite3
 
 __all__ = ['db', 'init_db']
 

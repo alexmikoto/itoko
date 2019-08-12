@@ -10,18 +10,38 @@ original filename. The last 6 bytes store the base 10 representation of the
 filename length, and the previous N bytes store the filename as a string.
 
 Header layout:
-| Encrypted? (1 byte, 1 or 0) | Raw data |
+| Encrypted? (1 byte, '1' or '0') | Raw data |
 
 Footer layout:
 | Raw data | Filename (N bytes) | Filename length (6 bytes) |
+
+NEW Header layout:
+
+External metadata header
+typedef struct header {
+    uint8_t version;
+    uint8_t flags;  // Layout: R R R R R R R IS_ENCRYPTED
+    char[6] reserved;
+    char[4] algorithm;
+    char[4] mode;
+};
+
+Crypto header
+typedef struct header {
+    uint8_t version;
+    uint16_t filename_length;
+    char[filename_length] filename;
+}
+
 """
 
 import os
 import time
+import struct
 
 from werkzeug.datastructures import FileStorage
 
-from erio_cabinet.crypto import Encryptor
+from itoko.crypto import Encryptor
 
 __all__ = [
     "generate_filename",
@@ -32,7 +52,6 @@ __all__ = [
     "UploadedEncryptedFile"
 ]
 
-# TIMESTAMP_PRECISION = 10000000
 TIMESTAMP_PRECISION = 1000
 FILENAME_LENGTH_PADDING = 6  # More than enough for almost every file system
 MARK_SIZE = 1

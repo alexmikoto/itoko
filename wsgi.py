@@ -1,4 +1,4 @@
-from erio_cabinet import make_app
+from itoko import make_app
 
 application = make_app()
 
