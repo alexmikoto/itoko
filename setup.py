@@ -16,7 +16,7 @@ install_requires = [
 ]
 
 setup(
-    name="erio-cabinet",
+    name="itoko",
     author="Alex A",
     author_email="alex@meido.ninja",
     description="Encrypted file host.",

@@ -9,18 +9,18 @@ from flask import (
 
 from itoko.crypto import generate_key, DecryptionError
 from itoko.files import file_from_file_storage, read_file
-from itoko.util import request_wants_json, get_content_disposition
+from itoko.api.util import request_wants_json, get_content_disposition
 from itoko.shorten import shorten_filename, find_shortened
 
-main_blueprint = Blueprint('main', __name__, template_folder='templates')
+ui_blueprint = Blueprint('ui', __name__, template_folder='templates')
 
 
-@main_blueprint.route('/')
+@ui_blueprint.route('/')
 def home_page():
     return render_template('index.html')
 
 
-@main_blueprint.route('/upload', methods=['POST'])
+@ui_blueprint.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
         flash('No file part', category='error')
@@ -82,44 +82,3 @@ def upload_file():
     return render_template('upload_successful.html', file_url=file_url,
                            short_url=short_url)
 
-
-@main_blueprint.route('/u/<filename>')
-@main_blueprint.route('/s/<short_filename>')
-def serve_file(filename=None, short_filename=None):
-    if not filename:
-        if not short_filename:
-            abort(404)
-        filename = find_shortened(short_filename)
-    if not filename:
-        return abort(404)
-
-    # Probe permanent folder first, then the temporary folder
-    full_filename = os.path.join(current_app.config['PERMANENT_UPLOAD_FOLDER'],
-                                 filename)
-    if not os.path.exists(full_filename):
-        full_filename = os.path.join(current_app.config['UPLOAD_FOLDER'],
-                                     filename)
-    key = request.args.get('key')
-
-    if not os.path.exists(full_filename):
-        return abort(404)
-
-    file = read_file(full_filename)
-
-    if file.is_encrypted():
-        try:
-            # Put an empty key if none was provided
-            file = file.decrypt((key or '').encode('utf-8'))
-        except DecryptionError:
-            return abort(403)
-
-    mimetype = magic.from_buffer(file.data, mime=True)
-    io = BytesIO(file.data)
-    response = make_response(send_file(io, mimetype=mimetype))
-
-    # Add filename, set as attachment if not allowed inline
-    response.headers['Content-Disposition'] = get_content_disposition(
-        file.original_filename,
-        mimetype
-    )
-    return response

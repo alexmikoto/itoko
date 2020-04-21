@@ -14,19 +14,6 @@ Header layout:
 
 Footer layout:
 | Raw data | Filename (N bytes) | Filename length (6 bytes) |
-
-NEW Header layout:
-typedef struct header {
-    uint8_t version;
-    uint8_t flags;
-    uint16_t reserved;
-};
-
-typedef struct header {
-    uint16_t filename_length;
-    uint16_t reserved;
-};
-
 """
 
 import os
@@ -35,7 +22,7 @@ import struct
 
 from werkzeug.datastructures import FileStorage
 
-from itoko.crypto import Encryptor
+from itoko.crypto.suite.aesv1 import AESv1Suite
 
 __all__ = [
     "generate_filename",
@@ -55,15 +42,11 @@ UNENCRYPTED_MARK = b'0'
 FILENAME_FOOTER_FORMAT = '{:0' + str(FILENAME_LENGTH_PADDING) + 'd}'
 
 
-def generate_filename() -> str:
-    """
-    Generates a filename. Currently the upload date timestamp in milliseconds is
-    used.
-    """
-    return str(int(time.time() * TIMESTAMP_PRECISION))
+def complies(raw_file: bytes) -> bool:
+    return raw_file[0] in (ENCRYPTED_MARK, UNENCRYPTED_MARK)
 
 
-def read_file(filename: str) -> 'UploadedFile':
+def read_file(self, filename: str) -> 'UploadedFile':
     """
     Reads a file stored in the server and removes its header indicating
     whether it is encrypted. If it is encrypted an UploadedEncryptedFile
@@ -84,7 +67,7 @@ def read_file(filename: str) -> 'UploadedFile':
         return UploadedRawFile.from_payload(payload, filename)
 
 
-def file_from_file_storage(file: FileStorage) -> 'UploadedRawFile':
+def file_from_file_storage(self, file: FileStorage) -> 'UploadedRawFile':
     """
     Converts a Flask FileStorage, which represents a file being uploaded
     into an UploadedRawFile for storage in-server.

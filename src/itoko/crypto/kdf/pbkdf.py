@@ -2,16 +2,21 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
-from itoko.kdf import DerivedKey
+from itoko.crypto.kdf import KDF, DerivedKey
 
 __all__ = ["PBKDFDerivedKey"]
-
-ITERATION_COUNT = 100000
 
 backend = default_backend()
 
 
 class PBKDFDerivedKey(DerivedKey):
+    """
+    PBKDF2-HMAC derived key.
+    """
+    pass
+
+
+class PBKDF(KDF):
     """
     Suite that uses PBKDF2-HMAC as KDF, using SHA256 as PRF.
     """
@@ -19,7 +24,7 @@ class PBKDFDerivedKey(DerivedKey):
     default_key_length = 64
     supported_key_lengths = (32, 64)
 
-    def derive_key(self, key: bytes, salt: bytes) -> bytes:
+    def derive_key(self, key: bytes, salt: bytes) -> DerivedKey:
         """
         Derives a cryptographic fixed-length key from the given key.
 
@@ -28,9 +33,14 @@ class PBKDFDerivedKey(DerivedKey):
         """
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256,
-            length=self.key_length,
+            length=self.default_key_length,
             salt=salt,
-            iterations=ITERATION_COUNT,
+            iterations=self.iterations,
             backend=backend
         )
-        return kdf.derive(key)
+        return PBKDFDerivedKey(
+            key_length=self.default_key_length,
+            key=key,
+            salt=salt,
+            derived_key=kdf.derive(key),
+        )

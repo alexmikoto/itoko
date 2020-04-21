@@ -1,0 +1,15 @@
+[flask]
+SITE_URL = 'https://mysiteurl.com'
+MAX_CONTENT_LENGTH = 268435456
+SECRET_KEY = 'my long secret key'
+SQLITE3_DATABASE = '/srv/erio-cabinet/erio.db'
+
+[crypto]
+suite = "itoko.crypto.suite.aes.AESSuite"
+
+[storage]
+temp_folder = "C:\\Users\\Alex\\AppData\\Local\\Temp\\itoko\\temp"
+perm_folder = "C:\\Users\\Alex\\AppData\\Local\\Temp\\itoko\\perm"
+
+[shortener]
+data_uri = "sqlite3:///C:\\itoko\\erio.db"

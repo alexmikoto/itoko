@@ -19,12 +19,7 @@ NEW Header layout:
 typedef struct header {
     uint8_t version;
     uint8_t flags;
-    uint16_t reserved;
-};
-
-typedef struct header {
     uint16_t filename_length;
-    uint16_t reserved;
 };
 
 """

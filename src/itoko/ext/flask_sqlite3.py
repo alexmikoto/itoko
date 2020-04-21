@@ -13,6 +13,8 @@ def _make_dicts(cursor: sqlite3.Cursor, row: sqlite3.Row):
 
 
 class SQLite3(object):
+    """ SQLite 3 connector for Flask applications. """
+
     def __init__(self, app=None):
         self.app = app
         if app is not None:
