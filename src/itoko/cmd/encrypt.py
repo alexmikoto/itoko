@@ -1,4 +1,5 @@
 import argparse
+import sys
 import magic
 from itoko.fs.format.v2 import ItokoV2FormatFile
 
@@ -14,7 +15,7 @@ def encrypt(filename: str, key: str) -> None:
             mime_type=magic.from_buffer(data, mime=True)
         )
         eff = ff.encrypt(key.encode("utf-8"))
-        print(eff.file)
+        sys.stdout.buffer.write(eff.file)
 
 
 def main():

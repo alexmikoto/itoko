@@ -10,9 +10,10 @@ with io.open("src/itoko/__init__.py", "rt", encoding="utf8") as f:
     version = re.search(r"__version__ = \"(.*?)\"", f.read()).group(1)
 
 install_requires = [
-    "flask>=1.0",
+    "flask>=1.1",
     "cryptography>=2.0",
     "python-magic>=0.4",
+    "toml>=0.10",
 ]
 
 setup(

@@ -31,12 +31,12 @@ def upload_file():
         flash("No file part", category="error")
         return redirect(url_for("home_page"))
 
+    st_cfg = current_app.config["ITOKO_STORAGE"]
     fs = FSStorage(
-        temporary_folder=current_app.config["UPLOAD_FOLDER"],
-        permanent_folder=current_app.config["PERMANENT_UPLOAD_FOLDER"],
+        temporary_folder=st_cfg["temporary_folder"],
+        permanent_folder=st_cfg["permanent_folder"],
         readers=[
-            ItokoV1FormatReader(),
-            ItokoV2FormatReader(),
+            reader() for reader in st_cfg["readers"]
         ]
     )
 
@@ -50,7 +50,7 @@ def upload_file():
         flash("No file selected", category="error")
         return redirect(url_for("home_page"))
 
-    file = ItokoV2FormatFile(
+    file = st_cfg["writer"](
         payload=r_file.stream.read(),
         filename=r_file.filename,
     )
@@ -118,12 +118,12 @@ def serve_file(filename=None, short_filename=None):
 
     key = request.args.get('key')
 
+    st_cfg = current_app.config["ITOKO_STORAGE"]
     fs = FSStorage(
-        temporary_folder=current_app.config["UPLOAD_FOLDER"],
-        permanent_folder=current_app.config["PERMANENT_UPLOAD_FOLDER"],
+        temporary_folder=st_cfg["temporary_folder"],
+        permanent_folder=st_cfg["permanent_folder"],
         readers=[
-            ItokoV1FormatReader(),
-            ItokoV2FormatReader(),
+            reader() for reader in st_cfg["readers"]
         ]
     )
 
@@ -140,7 +140,6 @@ def serve_file(filename=None, short_filename=None):
         except DecryptionError:
             return abort(403)
 
-    print(file.is_encrypted)
     io = BytesIO(file.payload)
     response = make_response(send_file(io, mimetype=file.mime_type))
 

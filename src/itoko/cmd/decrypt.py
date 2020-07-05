@@ -1,4 +1,5 @@
 import argparse
+import sys
 from itoko.fs.format.v1 import ItokoV1FormatReader
 from itoko.fs.format.v2 import ItokoV2FormatReader
 
@@ -15,7 +16,7 @@ def decrypt(filename: str, key: str) -> None:
             if reader.complies(data):
                 eff = reader.read(filename, data)
                 ff = eff.decrypt(key.encode("utf-8"))
-                print(ff.payload)
+                sys.stdout.buffer.write(ff.payload)
 
 
 def main():
