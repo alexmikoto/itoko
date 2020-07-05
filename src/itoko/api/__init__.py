@@ -79,7 +79,7 @@ def upload_file():
         )
 
     if shorten:
-        short_name = shorten_filename(file.filename)
+        short_name = shorten_filename(file.fs_filename)
         if encrypt:
             short_url = "{site_url}/s/{short_name}?key={key}".format(
                 site_url=request.host_url[:-1],
@@ -108,7 +108,8 @@ def upload_file():
 
 @api_blueprint.route("/u/<filename>")
 @api_blueprint.route("/s/<short_filename>")
-def serve_file(filename=None, short_filename=None):
+@api_blueprint.route("/b/<base64_filename>")
+def serve_file(filename=None, short_filename=None, base64_filename=None):
     if not filename:
         if not short_filename:
             abort(404)
