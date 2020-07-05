@@ -1,5 +1,6 @@
 erio_cabinet.ini
 config.cfg
+config.toml
 __pycache__/
 env/
 venv/

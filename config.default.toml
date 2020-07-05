@@ -1,16 +1,15 @@
 [flask]
-SITE_URL = 'https://mysiteurl.com'
-UPLOAD_FOLDER = '/tmp/erio-cabinet'
-PERMANENT_UPLOAD_FOLDER = '/srv/erio-cabinet/uploads'
+SITE_URL = 'https://itoko.moe'
 MAX_CONTENT_LENGTH = 268435456
 SECRET_KEY = 'my long secret key'
 SQLITE3_DATABASE = '/srv/erio-cabinet/erio.db'
 
 [crypto]
-suite = "itoko.crypto.suite.aes.AESSuite"
+suite = "itoko.crypto.suite.aesv2.AESV2Suite"
 
-[persistence]
-
+[storage]
+temporary_folder = '/srv/erio-cabinet/uploads/temp'
+permanent_folder = '/srv/erio-cabinet/uploads/perm'
 
 [shortener]
 database_uri = "sqlite:///srv/itoko/erio.db"

@@ -10,51 +10,45 @@ verification.
 itoko stores any uploaded file with an additional header containing file
 metadata.
 
-All file have the following header structure prepended:
+In the current version, all file have the following header structure prepended:
 ```c
 struct header {
     uint8_t version;
     uint8_t flags;
-    char[6] r1;  /* reserved */
+    uint16_t filename_length;
+    uint16_t mime_type_length;
+    uint16_t padding;
 };
 ```
 
-The `version` field is always `0x01` in the current revision. The `flags` field
-is a bit field. Currently only the last bit is in use as a boolean flag
+The `version` field is always `0x02` in the current revision. The `flags` field
+is a bit field. Currently only the 7th bit is in use as a boolean flag
 indicating whether the file is encrypted or not. In the case of an encrypted
-file the flags field will always contain `0x01`.
+file the flags field will always contain a set 7th bit.
 
 In the case of an encrypted file an additional header structure is appended 
 right after the first header, which has the following structure:
 ```c
-struct encrypted_header {
-    uint16_t kdf_suite;
-    uint16_t crypto_suite;
-    uint32_t key_length;
-    uint64_t salt;
-    uint64_t iv;
+struct crypto_header {
+    uint16_t suite_id;
+    uint16_t salt;
+    uint32_t hmac;
 };
 ```
 
-The `key_suite` field contains an enumerated value indicating the key derivation
-suite used for the current file key derivation. A `key_suite` in itoko contains
-a key derivation function of the form `KDF(key, salt) -> derived_key`, where the
-`derived_key` output is a pseudo-random result of size `key_length` octets.
- 
-The `crypto_suite` field contains an enumerated value indicating the
-cryptography suite used for the current file encryption. A `crypto_suite` in
-itoko contains the following components:
-- An encryption function of the form `C(message, key, iv) -> ciphertext`
-- A decryption function of the form `D(ciphertext, key, iv) -> message`
+The `suite_id` field contains an enumerated value indicating the cryptographic
+suite used for the current file. A suite in itoko defines a function with the
+form `encrypt(key, plaintext) -> ciphertext` and a function with the form
+`decrypt(key, ciphertext) -> plaintext`. Each suite handles its own internal
+procedure, including key derivation function and block cipher mode.
 
-Currently the following suites are available for key derivation:
-- `0x0001`: `PBKDF2-HMAC(prf=SHA256, iterations=100000, ...)`. Supported key
-  lengths are: 32, 64. Refered to as PBKDF for shortness in code.
+The `salt` field stores the salt value used for key derivation, the `hmac` field
+the result of the validation function. As the nonce/iv must be validated in all
+ciphers, it is not included in the crypto header and is instead prepended as the
+first block in the validated ciphertext.
 
-And currently the following suites are available for encryption:
-- `0x0001`: `AES256(mode=CTR, ...)+HMAC(hash=SHA256, ...)`. Supported key
-  lengths are: 64. Due to the need of both an cipher key and an authentication
-  key, this suite uses a double sized derived key. 
-
-The `salt` field stores the salt value used for key derivation. The `iv` field
-stores the initialization vector or nonce applied to the encryption algorithm.
+Currently the following suites are available:
+- `0x0001`: `AES(len=256, mode=CTR, kdf=PBKDF2-HMAC(SHA256), iterations=100000, ...)`.
+- `0x0002`: `AES(len=256, mode=CTR, kdf=PBKDF2-HMAC(SHA256), iterations=100000, ...)`.
+            The difference between this suite and suite 1 is the binary format.
+            Suite 1 does not use the new crypto header format.
