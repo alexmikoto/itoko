@@ -110,7 +110,7 @@ class ItokoV1FormatFile(FormatFile):
         footer = struct.pack(fr.FOOTER_FORMAT, footer)
         return b"".join([header, self._payload, self._filename, footer])
 
-    def encryptor(self, key: bytes) -> "ItokoV1FormatFile":
+    def _encryptor(self, key: bytes) -> "ItokoV1FormatFile":
         encrypted_payload = AESv1Suite(key).encrypt(self._payload)
         return ItokoV1FormatFile(
             payload=encrypted_payload,
@@ -120,7 +120,7 @@ class ItokoV1FormatFile(FormatFile):
             mime_type=None,
         )
 
-    def decryptor(self, key: bytes) -> "ItokoV1FormatFile":
+    def _decryptor(self, key: bytes) -> "ItokoV1FormatFile":
         decrypted_payload = AESv1Suite(key).decrypt(self._payload)
         # Far easier to just reuse the previous reader
         return self._read_dec(

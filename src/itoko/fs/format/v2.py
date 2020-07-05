@@ -125,7 +125,7 @@ class ItokoV2FormatFile(FormatFile):
                 self._payload,
             ])
 
-    def encryptor(self, key: bytes) -> "ItokoV2FormatFile":
+    def _encryptor(self, key: bytes) -> "ItokoV2FormatFile":
         """
         Encrypts the current file with the given key, returning an
         UploadedEncryptedFile.
@@ -143,7 +143,7 @@ class ItokoV2FormatFile(FormatFile):
             mime_type=None,
         )
 
-    def decryptor(self, key: bytes) -> "ItokoV2FormatFile":
+    def _decryptor(self, key: bytes) -> "ItokoV2FormatFile":
         decrypted_payload = AESv2Suite(key).decrypt(self._payload)
         # This way we just feed the file to the read() function
         return self.read(self._fs_filename, decrypted_payload)

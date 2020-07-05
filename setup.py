@@ -28,4 +28,10 @@ setup(
     zip_safe=False,
     python_requires=">=3.6",
     install_requires=install_requires,
+    entry_points={
+        "console_scripts": [
+            "encrypt=itoko.cmd.encrypt:main",
+            "decrypt=itoko.cmd.decrypt:main",
+        ],
+    }
 )

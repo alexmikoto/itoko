@@ -2,6 +2,8 @@ erio_cabinet.ini
 config.cfg
 config.toml
 __pycache__/
+*.py[cdo]
+*.egg-info
 env/
 venv/
 .idea/

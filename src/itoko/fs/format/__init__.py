@@ -130,10 +130,10 @@ class FormatFile(ABC):
         """
         if self.is_encrypted:
             raise TypeError("File already encrypted.")
-        return self.encryptor(key)
+        return self._encryptor(key)
 
     @abstractmethod
-    def encryptor(self, key: bytes) -> "FormatFile":
+    def _encryptor(self, key: bytes) -> "FormatFile":
         """
         Function to be called when attempting to encrypt the payload. Operations
         are expected to perform a copy.
@@ -147,10 +147,10 @@ class FormatFile(ABC):
         """
         if not self.is_encrypted:
             raise TypeError("File not encrypted.")
-        return self.decryptor(key)
+        return self._decryptor(key)
 
     @abstractmethod
-    def decryptor(self, key: bytes) -> "FormatFile":
+    def _decryptor(self, key: bytes) -> "FormatFile":
         """
         Function to be called when attempting to decrypt the payload. Operations
         are expected to perform a copy.
