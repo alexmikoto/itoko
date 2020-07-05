@@ -34,11 +34,8 @@ def make_app():
         ),
     )
     if os.getenv("ITOKO_CONFIG"):
-        app.config.from_file(
-            os.getenv("ITOKO_CONFIG"),
-            load=toml.load,
-            silent=True
-        )
+        cfg = toml.load(os.getenv("ITOKO_CONFIG"))
+        app.config.update(cfg)
 
     # Make the uploads folder if it doesn't exist
     os.makedirs(app.config["ITOKO_STORAGE"]["temporary_folder"], exist_ok=True)

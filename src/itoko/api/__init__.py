@@ -100,7 +100,7 @@ def upload_file():
     # As it is not part of the UI proper and is a no JS workaround instead, this
     # template is not included in the UI folder.
     return render_template(
-        "templates/upload_successful.html",
+        "upload_successful.html",
         file_url=file_url,
         short_url=short_url,
     )
