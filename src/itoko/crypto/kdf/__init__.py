@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from .exc import InvalidKeyLengthError
+from itoko.crypto.exc import InvalidKeyLengthError
 
 __all__ = ["KDF", "DerivedKey"]
 
@@ -10,6 +10,7 @@ class DerivedKey(ABC):
     Stores the results from the key derivation function. Only authenticated
     ciphers
     """
+
     __slots__ = ("_key_length", "key", "salt", "derived_key")
 
     _key_length: int
@@ -29,22 +30,27 @@ class DerivedKey(ABC):
     @property
     def cipher_key(self):
         """
-        The first bits of the derived key are used as cipher encryption key.
+        In non-authenticated ciphers, only the first half of the derived key
+        should be used as cipher encryption key. If the key won't be split just
+        access the derived key directly.
         """
-        return self.derived_key[:self._key_length]
+        return self.derived_key[: self._key_length // 2]
 
     @property
     def hmac_key(self):
         """
-        The last bits of the derived key are used as MAC key.
+        In non-authenticated ciphers, only the second half of the derived key
+        should be used as authentication key. If the key won't be split just
+        ignore this property.
         """
-        return self.derived_key[-self._key_length:]
+        return self.derived_key[self._key_length // 2:]
 
 
 class KDF(ABC):
     """
     Basic interface for key derivation suites.
     """
+
     __slots__ = ("key_length", "iterations")
 
     default_key_length = None

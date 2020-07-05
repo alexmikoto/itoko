@@ -1,4 +1,6 @@
-from cryptography.hazmat.backends  import default_backend
+from abc import ABC, abstractmethod
+from typing import Optional
+
 from cryptography.hazmat.primitives.ciphers import Cipher as CryptoCipher
 
 from itoko.crypto.kdf import DerivedKey
@@ -6,34 +8,35 @@ from itoko.crypto.kdf import DerivedKey
 __all__ = ["Cipher"]
 
 
-class Cipher:
-    __slots__ = ('key', 'nonce', 'cipher')
+class Cipher(ABC):
+    __slots__ = ("key", "iv", "nonce", "_cipher")
 
     key: DerivedKey
-    iv: bytes
-    nonce: bytes
+    iv: Optional[bytes]
+    nonce: Optional[bytes]
 
-    _algorithm: CryptoCipher = None
-    _backend: object  # Cryptography backends are not strongly typed
+    _cipher: CryptoCipher
 
-    def __init__(self, key: DerivedKey, nonce: bytes):
+    def __init__(self, key: DerivedKey, iv: bytes = None, nonce: bytes = None):
         self.key = key
+        self.iv = iv
         self.nonce = nonce
-        self.cipher = self._build_cipher(key, nonce)
+        self._cipher = self._build_cipher()
 
-    def _build_cipher(self, key: DerivedKey, nonce: bytes) -> CryptoCipher:
+    @abstractmethod
+    def _build_cipher(self) -> CryptoCipher:
         raise NotImplementedError
 
     def encrypt(self, plaintext: bytes) -> bytes:
         """
-        Encrypts plaintext with AES in CTR mode.
+        Encrypts plaintext with chosen algorithm.
         """
-        encryptor = self.cipher.encryptor()
+        encryptor = self._cipher.encryptor()
         return encryptor.update(plaintext) + encryptor.finalize()
 
     def decrypt(self, encrypted: bytes) -> bytes:
         """
-        Decrypts ciphertext with AES in CTR mode.
+        Decrypts ciphertext with chosen algorithm.
         """
-        decryptor = self.cipher.decryptor()
+        decryptor = self._cipher.decryptor()
         return decryptor.update(encrypted) + decryptor.finalize()

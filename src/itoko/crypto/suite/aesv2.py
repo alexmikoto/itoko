@@ -1,4 +1,5 @@
 import os
+import struct
 
 from cryptography.hazmat.backends import default_backend
 
@@ -10,16 +11,21 @@ from itoko.crypto.suite import Suite
 backend = default_backend()
 
 
-class AESv1Suite(Suite):
+class AESv2Suite(Suite):
     """
-    Handles encryption and decryption with AES-256-HMAC in CTR mode.
+    Handles encryption and decryption with AES-256-HMAC in CTR mode. This new
+    version additionally uses a new header layout.
     """
 
     __slots__ = ("key",)
 
-    SUITE_ID = 1
+    SUITE_ID = 2
+    HEADER_FORMAT = "!H6x16s16x32s"
+    HEADER_SIZE = struct.calcsize("!H6x16s16x32s")
 
+    # 256-bit key
     KEY_LENGTH = 32
+    # AES blocks are always 128 bits
     SALT_SIZE = 16
     BLOCK_SIZE = 16
     ITERATION_COUNT = 100000
@@ -43,8 +49,10 @@ class AESv1Suite(Suite):
         # Make the CTR nonce the first block and use the HMAC to verify it too
         encrypted = nonce + encrypted
         hmac = SHA256HMAC(dk)
-        h = hmac.build(encrypted)
-        return b"".join([encrypted, hmac, salt])
+        hh = hmac.build(encrypted)
+        # Build crypto header
+        header = struct.pack(self.HEADER_FORMAT, self.SUITE_ID, salt, hh)
+        return header + encrypted
 
     def decrypt(self, ciphertext: bytes) -> bytes:
         """
@@ -52,18 +60,16 @@ class AESv1Suite(Suite):
         the bundle. If the provided key and salt fail to verify the HMAC
         AESCipherException is raised.
         """
-        payload, h, salt = (
-            ciphertext[: -(self.SALT_SIZE + SHA256HMAC.digest_size)],
-            ciphertext[
-                -(self.SALT_SIZE + SHA256HMAC.digest_size): -self.SALT_SIZE
-            ],
-            ciphertext[-self.SALT_SIZE:],
+        header, payload = (
+            ciphertext[: self.HEADER_SIZE],
+            ciphertext[self.HEADER_SIZE:],
         )
+        _, salt, hh = struct.unpack(self.HEADER_FORMAT, header)
         kdf = self._get_kdf()
         dk = kdf.derive_key(self.key, salt)
         # Check the HMAC before going further
         hmac = SHA256HMAC(dk)
-        hmac.check(payload, h)
+        hmac.check(payload, hh)
         # CTR nonce is the first block
         nonce, encrypted = (
             payload[: self.BLOCK_SIZE],

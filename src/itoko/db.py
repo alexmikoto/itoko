@@ -1,6 +1,6 @@
 from itoko.ext.flask_sqlite3 import SQLite3
 
-__all__ = ['db', 'init_db']
+__all__ = ["db", "init_db"]
 
 db = SQLite3()
 

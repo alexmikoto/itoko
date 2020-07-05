@@ -4,7 +4,7 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 from itoko.crypto.kdf import KDF, DerivedKey
 
-__all__ = ["PBKDFDerivedKey"]
+__all__ = ["PBKDF", "PBKDFDerivedKey"]
 
 backend = default_backend()
 
@@ -13,6 +13,7 @@ class PBKDFDerivedKey(DerivedKey):
     """
     PBKDF2-HMAC derived key.
     """
+
     pass
 
 
@@ -22,7 +23,7 @@ class PBKDF(KDF):
     """
 
     default_key_length = 64
-    supported_key_lengths = (32, 64)
+    supported_key_lengths = (16, 32, 64)
 
     def derive_key(self, key: bytes, salt: bytes) -> DerivedKey:
         """
@@ -33,13 +34,13 @@ class PBKDF(KDF):
         """
         kdf = PBKDF2HMAC(
             algorithm=hashes.SHA256,
-            length=self.default_key_length,
+            length=self.key_length,
             salt=salt,
             iterations=self.iterations,
-            backend=backend
+            backend=backend,
         )
         return PBKDFDerivedKey(
-            key_length=self.default_key_length,
+            key_length=self.key_length,
             key=key,
             salt=salt,
             derived_key=kdf.derive(key),

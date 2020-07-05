@@ -15,223 +15,115 @@ Header layout:
 Footer layout:
 | Raw data | Filename (N bytes) | Filename length (6 bytes) |
 """
-
-import os
-import time
 import struct
 
-from werkzeug.datastructures import FileStorage
-
 from itoko.crypto.suite.aesv1 import AESv1Suite
+from itoko.fs.format import FormatReader, FormatFile
 
-__all__ = [
-    "generate_filename",
-    "file_from_file_storage",
-    "read_file",
-    "UploadedFile",
-    "UploadedRawFile",
-    "UploadedEncryptedFile"
-]
-
-TIMESTAMP_PRECISION = 1000
-FILENAME_LENGTH_PADDING = 6  # More than enough for almost every file system
-MARK_SIZE = 1
-ENCRYPTED_MARK = b'1'
-UNENCRYPTED_MARK = b'0'
-
-FILENAME_FOOTER_FORMAT = '{:0' + str(FILENAME_LENGTH_PADDING) + 'd}'
+__all__ = ["ItokoV1FormatReader", "ItokoV1FormatFile"]
 
 
-def complies(raw_file: bytes) -> bool:
-    return raw_file[0] in (ENCRYPTED_MARK, UNENCRYPTED_MARK)
+class ItokoV1FormatReader(FormatReader):
+    HEADER_FORMAT = "!c"
+    HEADER_SIZE = struct.calcsize("!c")
+    FOOTER_FORMAT = "!6s"
+    FOOTER_SIZE = struct.calcsize("!6s")
+
+    ENCRYPTED_HEADER = b"1"
+    UNENCRYPTED_HEADER = b"0"
+    FILENAME_FOOTER_FORMAT = "{:06d}"
+
+    def complies(self, payload: bytes) -> bool:
+        header = payload[: self.HEADER_SIZE]
+        return header in (self.ENCRYPTED_HEADER, self.UNENCRYPTED_HEADER)
+
+    def read(self, filename: str, payload: bytes) -> "FormatFile":
+        if self.complies(payload):
+            return ItokoV1FormatFile.read(filename, payload)
 
 
-def read_file(self, filename: str) -> 'UploadedFile':
-    """
-    Reads a file stored in the server and removes its header indicating
-    whether it is encrypted. If it is encrypted an UploadedEncryptedFile
-    is returned for further decryption, else an UploadedRawFile is returned.
-
-    :param filename: Filename of the file stored in-server.
-    :return: Object representation of the binary file.
-    """
-    with open(filename, 'rb') as f:
-        raw_file = f.read()
-    header, payload = raw_file[:MARK_SIZE], raw_file[MARK_SIZE:]
-    if header == ENCRYPTED_MARK:
-        return UploadedEncryptedFile(
-            filename=filename,
-            data=payload
-        )
-    else:
-        return UploadedRawFile.from_payload(payload, filename)
-
-
-def file_from_file_storage(self, file: FileStorage) -> 'UploadedRawFile':
-    """
-    Converts a Flask FileStorage, which represents a file being uploaded
-    into an UploadedRawFile for storage in-server.
-
-    :param file: FileStorage being uploaded.
-    :return: Object representation of the binary file.
-    """
-    filename = generate_filename()
-    return UploadedRawFile(
-        data=file.stream.read(),
-        original_filename=file.filename.encode('utf-8'),
-        filename=filename
-    )
-
-
-class UploadedFile:
-    """
-    Represents a file stored in-server. It should not be directly instanced,
-    instead all of its subclasses implement the file property, which returns
-    the binary representation of the file to be stored.
-    """
-    __slots__ = ('filename', 'data')
-
-    def __init__(self, filename: str, data: bytes):
-        self.filename = filename
-        self.data = data
-
-    @staticmethod
-    def read(filename: str) -> 'UploadedFile':
-        return read_file(filename)
-
-    @staticmethod
-    def from_file_storage(file: FileStorage) -> 'UploadedRawFile':
-        return file_from_file_storage(file)
-
-    @property
-    def file(self) -> bytes:
-        raise NotImplementedError
-
-    @property
-    def original_filename(self) -> str:
-        raise NotImplementedError
-
-    def is_encrypted(self) -> bool:
-        return isinstance(self, UploadedEncryptedFile)
-
-    def encrypt(self, key: bytes) -> 'UploadedFile':
-        raise NotImplementedError
-
-    def decrypt(self, key: bytes) -> 'UploadedFile':
-        raise NotImplementedError
-
-    def save(self, folder: str) -> None:
-        """
-        Saves the current file object in-server.
-
-        :param folder: Folder on which the file should be saved.
-        :return:
-        """
-        full_filename = os.path.join(folder, self.filename)
-        with open(full_filename, 'wb+') as f:
-            f.write(self.file)
-
-
-class UploadedRawFile(UploadedFile):
-    __slots__ = ('_original_filename',)
-
-    def __init__(self, filename: str, data: bytes, original_filename: str):
-        super().__init__(filename, data)
-        self._original_filename = original_filename
-
-    @property
-    def file(self) -> bytes:
-        return b''.join([
-            UNENCRYPTED_MARK,
-            self.payload
-        ])
-
-    @property
-    def original_filename(self) -> str:
-        return self._original_filename
-
-    @property
-    def payload(self) -> bytes:
-        """
-        Returns the payload of the current object, which is the raw file data
-        and file metadata without the outer header indicating whether its
-        encrypted.
-        :return: Raw file content followed by a footer with its filename and
-                 the base 10 representation of the filename length in the last
-                 6 bytes.
-        """
-        filename_length = len(self.original_filename)
-        return b''.join([
-            self.data,
-            self.original_filename,
-            FILENAME_FOOTER_FORMAT.format(filename_length).encode('utf-8'),
-        ])
-
+class ItokoV1FormatFile(FormatFile):
     @classmethod
-    def from_payload(cls, payload: bytes, filename: str) -> 'UploadedRawFile':
+    def read(cls, filename: str, payload: bytes) -> "ItokoV1FormatFile":
         """
-        Splits a binary payload back into an UploadedRawFile object.
+        Splits a binary payload back into an ItokoV1FormatFile object.
 
-        :param payload: Binary payload including a filename footer.
         :param filename: Filename of the file stored in-server.
+        :param payload: Binary payload including a filename footer.
         :return: Object representation of the binary file.
         """
-        filename_length = int(payload[-FILENAME_LENGTH_PADDING:])
+        fr = ItokoV1FormatReader  # Gets tiring on the eyes
+        header = payload[: fr.HEADER_SIZE]
+        if header == fr.ENCRYPTED_HEADER:
+            return cls._read_enc(filename, payload)
+        else:
+            return cls._read_dec(filename, payload)
+
+    @classmethod
+    def _read_enc(cls, filename: str, payload: bytes) -> "ItokoV1FormatFile":
+        fr = ItokoV1FormatReader  # And also gets tiring on the eyes
+        header, data = payload[: fr.HEADER_SIZE], payload[fr.HEADER_SIZE:]
         return cls(
-            data=payload[:-(FILENAME_LENGTH_PADDING + filename_length)],
-            original_filename=payload[
-                              -(FILENAME_LENGTH_PADDING + filename_length)
-                              :-FILENAME_LENGTH_PADDING
-                              ].decode('utf-8'),
-            filename=filename
+            payload=data,
+            fs_filename=filename,
+            is_encrypted=True,
+            filename=None,
+            mime_type=None,
         )
 
-    def encrypt(self, key: bytes) -> 'UploadedEncryptedFile':
-        """
-        Encrypts the current file with the given key, returning an
-        UploadedEncryptedFile.
-
-        :param key: Encryption key.
-        :return: Object representation of the encrypted file.
-        """
-        encrypted_payload = Encryptor(key).encrypt(self.payload)
-        return UploadedEncryptedFile(
-            filename=self.filename,
-            data=encrypted_payload
+    @classmethod
+    def _read_dec(cls, filename: str, payload: bytes) -> "ItokoV1FormatFile":
+        fr = ItokoV1FormatReader  # Also gets tiring on the eyes
+        header, data, footer = (
+            payload[: fr.HEADER_SIZE],
+            payload[fr.HEADER_SIZE: -fr.FOOTER_SIZE],
+            payload[-fr.FOOTER_SIZE:],
         )
-
-    def decrypt(self, key: bytes) -> 'UploadedFile':
-        raise TypeError("File not encrypted.")
-
-
-class UploadedEncryptedFile(UploadedFile):
-    __slots__ = ('data',)
-
-    def __init__(self, filename: str, data: bytes):
-        super().__init__(filename, data)
-        self.data = data
+        # We still need to read the filename based on the footer
+        (filename_size,) = struct.unpack(fr.FOOTER_FORMAT, footer)
+        filename_size = int(filename_size.decode("utf-8"))
+        file_data, r_filename = data[:-filename_size], data[-filename_size:]
+        # Got all data
+        return cls(
+            payload=file_data,
+            fs_filename=filename,
+            is_encrypted=False,
+            filename=r_filename,
+            mime_type=None,
+        )
 
     @property
     def file(self) -> bytes:
-        return b''.join([
-            ENCRYPTED_MARK,
-            self.data
-        ])
-
-    @property
-    def original_filename(self) -> str:
-        raise TypeError("Cannot read encrypted filename.")
-
-    def encrypt(self, key: bytes) -> 'UploadedFile':
-        raise TypeError("File already encrypted.")
-
-    def decrypt(self, key: bytes) -> UploadedRawFile:
         """
-        Decrypts the current file with the given key, returning an
-        UploadedRawFile.
-
-        :param key: Decryption key.
-        :return: Object representation of the decrypted file.
+        Returns the binary representation of the current object, which is the
+        header plus raw file data and file metadata. V1 format does not store
+        mime_type.
+        :return: Header followed by raw file content, followed by a footer with
+                 its filename and the base 10 representation of the filename
+                 length in the last 6 bytes.
         """
-        decrypted_payload = Encryptor(key).decrypt(self.data)
-        return UploadedRawFile.from_payload(decrypted_payload, self.filename)
+        fr = ItokoV1FormatReader  # Just because it gets tiring on the eyes too
+        header = fr.UNENCRYPTED_HEADER
+        footer = fr.FILENAME_FOOTER_FORMAT.format(len(self._filename)).format(
+            "utf-8"
+        )
+        footer = struct.pack(fr.FOOTER_FORMAT, footer)
+        return b"".join([header, self._payload, self._filename, footer])
+
+    def encryptor(self, key: bytes) -> "ItokoV1FormatFile":
+        encrypted_payload = AESv1Suite(key).encrypt(self._payload)
+        return ItokoV1FormatFile(
+            payload=encrypted_payload,
+            fs_filename=self._fs_filename,
+            is_encrypted=True,
+            filename=None,
+            mime_type=None,
+        )
+
+    def decryptor(self, key: bytes) -> "ItokoV1FormatFile":
+        decrypted_payload = AESv1Suite(key).decrypt(self._payload)
+        # Far easier to just reuse the previous reader
+        return self._read_dec(
+            self._fs_filename,
+            ItokoV1FormatReader.UNENCRYPTED_HEADER + decrypted_payload,
+        )
