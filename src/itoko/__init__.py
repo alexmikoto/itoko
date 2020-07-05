@@ -28,7 +28,10 @@ def make_app():
                 "itoko.fs.format.v1:ItokoV1FormatReader",
                 "itoko.fs.format.v2:ItokoV2FormatReader",
             ]
-        )
+        ),
+        ITOKO_UI=dict(
+            abuse_email="abuse@itoko.moe",
+        ),
     )
     if os.getenv("ITOKO_CONFIG"):
         app.config.from_file(
