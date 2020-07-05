@@ -4,6 +4,8 @@ config.toml
 __pycache__/
 *.py[cdo]
 *.egg-info
+out/
+dist/
 env/
 venv/
 .idea/

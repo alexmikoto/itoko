@@ -1,2 +1,3 @@
-graft src/erio_cabinet/templates
-graft src/erio_cabinet/static
+graft src/itoko/api/templates
+graft src/itoko/ui/templates
+graft src/itoko/ui/static
