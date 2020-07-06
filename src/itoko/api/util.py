@@ -6,12 +6,14 @@ __all__ = ["request_wants_json", "get_content_disposition"]
 
 INLINE_MIMETYPES = [
     "application/json",
+    "application/mp4",
     "application/pdf",
     "audio/aac",
     "audio/flac",
     "audio/x-flac",
     "audio/midi",
     "audio/x-midi",
+    "audio/mp4",
     "audio/mpeg",
     "audio/ogg",
     "audio/opus",
@@ -29,6 +31,7 @@ INLINE_MIMETYPES = [
     "text/csv-schema",
     "text/plain",
     "video/x-msvideo",
+    "video/mp4",
     "video/mpeg",
     "video/ogg",
     "video/mp2t",
