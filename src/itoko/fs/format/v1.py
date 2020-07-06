@@ -80,9 +80,10 @@ class ItokoV1FormatFile(FormatFile):
             payload[-fr.FOOTER_SIZE:],
         )
         # We still need to read the filename based on the footer
-        (filename_size,) = struct.unpack(fr.FOOTER_FORMAT, footer)
+        filename_size, = struct.unpack(fr.FOOTER_FORMAT, footer)
         filename_size = int(filename_size.decode("utf-8"))
         file_data, r_filename = data[:-filename_size], data[-filename_size:]
+        r_filename = r_filename.decode("utf-8")
         # Got all data
         return cls(
             payload=file_data,
@@ -104,11 +105,12 @@ class ItokoV1FormatFile(FormatFile):
         """
         fr = ItokoV1FormatReader  # Just because it gets tiring on the eyes too
         header = fr.UNENCRYPTED_HEADER
-        footer = fr.FILENAME_FOOTER_FORMAT.format(len(self._filename)).format(
+        filename_bytes = self._filename.encode("utf-8")
+        footer = fr.FILENAME_FOOTER_FORMAT.format(len(filename_bytes)).format(
             "utf-8"
         )
         footer = struct.pack(fr.FOOTER_FORMAT, footer)
-        return b"".join([header, self._payload, self._filename, footer])
+        return b"".join([header, self._payload, filename_bytes, footer])
 
     def _encryptor(self, key: bytes) -> "ItokoV1FormatFile":
         encrypted_payload = AESv1Suite(key).encrypt(self._payload)

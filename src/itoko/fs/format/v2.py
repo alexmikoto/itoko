@@ -84,7 +84,7 @@ class ItokoV2FormatFile(FormatFile):
             )
         else:
             fn, mt, file_data = (
-                data[:fn_len].decode("utf-8"),
+                data[: fn_len].decode("utf-8"),
                 data[fn_len: fn_len + mt_len].decode("utf-8"),
                 data[fn_len + mt_len:],
             )
