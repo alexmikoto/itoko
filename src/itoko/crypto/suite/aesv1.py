@@ -43,8 +43,8 @@ class AESv1Suite(Suite):
         # Make the CTR nonce the first block and use the HMAC to verify it too
         encrypted = nonce + encrypted
         hmac = SHA256HMAC(dk)
-        h = hmac.build(encrypted)
-        return b"".join([encrypted, hmac, salt])
+        hh = hmac.build(encrypted)
+        return b"".join([encrypted, hh, salt])
 
     def decrypt(self, ciphertext: bytes) -> bytes:
         """
@@ -52,7 +52,7 @@ class AESv1Suite(Suite):
         the bundle. If the provided key and salt fail to verify the HMAC
         AESCipherException is raised.
         """
-        payload, h, salt = (
+        payload, hh, salt = (
             ciphertext[: -(self.SALT_SIZE + SHA256HMAC.digest_size)],
             ciphertext[
                 -(self.SALT_SIZE + SHA256HMAC.digest_size): -self.SALT_SIZE
@@ -63,7 +63,7 @@ class AESv1Suite(Suite):
         dk = kdf.derive_key(self.key, salt)
         # Check the HMAC before going further
         hmac = SHA256HMAC(dk)
-        hmac.check(payload, h)
+        hmac.check(payload, hh)
         # CTR nonce is the first block
         nonce, encrypted = (
             payload[: self.BLOCK_SIZE],

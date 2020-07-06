@@ -104,16 +104,23 @@ class ItokoV1FormatFile(FormatFile):
                  length in the last 6 bytes.
         """
         fr = ItokoV1FormatReader  # Just because it gets tiring on the eyes too
-        header = fr.UNENCRYPTED_HEADER
-        filename_bytes = self._filename.encode("utf-8")
-        footer = fr.FILENAME_FOOTER_FORMAT.format(len(filename_bytes)).format(
-            "utf-8"
-        )
-        footer = struct.pack(fr.FOOTER_FORMAT, footer)
-        return b"".join([header, self._payload, filename_bytes, footer])
+        if not self.is_encrypted:
+            header = fr.UNENCRYPTED_HEADER
+            filename_bytes = self._filename.encode("utf-8")
+            footer = fr.FILENAME_FOOTER_FORMAT.format(
+                len(filename_bytes)
+            ).encode(
+                "utf-8"
+            )
+            footer = struct.pack(fr.FOOTER_FORMAT, footer)
+            return b"".join([header, self._payload, filename_bytes, footer])
+        else:
+            header = fr.ENCRYPTED_HEADER
+            return b"".join([header, self._payload])
 
     def _encryptor(self, key: bytes) -> "ItokoV1FormatFile":
-        encrypted_payload = AESv1Suite(key).encrypt(self._payload)
+        # Don't encrypt the header, V1 is ugly like that
+        encrypted_payload = AESv1Suite(key).encrypt(self.file[1:])
         return ItokoV1FormatFile(
             payload=encrypted_payload,
             fs_filename=self._fs_filename,
