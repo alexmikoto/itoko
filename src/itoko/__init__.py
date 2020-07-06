@@ -16,7 +16,6 @@ def make_app():
     app = Flask(__name__)
     # Set default configuration values
     app.config.update(
-        SITE_URL="http://localhost:5000",
         MAX_CONTENT_LENGTH=256 * 1024 * 1024,
         SECRET_KEY=os.urandom(32),
         SQLITE3_DATABASE=os.path.join(tempfile.gettempdir(), "test.db"),

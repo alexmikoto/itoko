@@ -40,7 +40,7 @@ class ItokoV2FormatReader(FormatReader):
     HEADER_FORMAT = "!BBHH2x"
     HEADER_SIZE = struct.calcsize("!BBHH2x")
 
-    # In V1 the first byte will always be 0x30 oe 0x31, so every number up to
+    # In V1 the first byte will always be 0x30 or 0x31, so every number up to
     # that is safe
     VERSION = 0x2
     ENCRYPTED_FLAG = 0b0000_0010

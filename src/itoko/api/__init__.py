@@ -67,28 +67,31 @@ def upload_file():
 
     fs.write(fst, file)
 
+    # Use the set site URL if in config, else guess based on HOST header
+    site_url = current_app.config.get("SITE_URL") or request.host_url[:-1]
+
     if encrypt:
         file_url = "{site_url}/u/{filename}?key={key}".format(
-            site_url=request.host_url[:-1],
+            site_url=site_url,
             filename=file.fs_filename,
             key=key.decode("utf-8"),
         )
     else:
         file_url = "{site_url}/u/{filename}".format(
-            site_url=request.host_url[:-1], filename=file.fs_filename
+            site_url=site_url, filename=file.fs_filename
         )
 
     if shorten:
         short_name = shorten_filename(file.fs_filename)
         if encrypt:
             short_url = "{site_url}/s/{short_name}?key={key}".format(
-                site_url=request.host_url[:-1],
+                site_url=site_url,
                 short_name=short_name,
                 key=key.decode("utf-8"),
             )
         else:
             short_url = "{site_url}/s/{short_name}".format(
-                site_url=request.host_url[:-1], short_name=short_name
+                site_url=site_url, short_name=short_name
             )
     else:
         short_url = None
