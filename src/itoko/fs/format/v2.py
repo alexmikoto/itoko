@@ -112,8 +112,8 @@ class ItokoV2FormatFile(FormatFile):
             mt_len = 0
         else:
             flags = 0x0
-            fn_len = len(self.filename)
-            mt_len = len(self.mime_type)
+            fn_len = len(self.filename.encode("utf-8"))
+            mt_len = len(self.mime_type.encode("utf-8"))
         header = struct.pack(fr.HEADER_FORMAT, version, flags, fn_len, mt_len)
         if self._is_encrypted:
             return b"".join([header, self._payload])
