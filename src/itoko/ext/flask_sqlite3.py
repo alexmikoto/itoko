@@ -4,6 +4,8 @@ Copy-pasted from http://flask.pocoo.org/docs/1.0/extensiondev/
 import sqlite3
 from flask import current_app, _app_ctx_stack
 
+__all__ = ["SQLite3"]
+
 
 def _make_dicts(cursor: sqlite3.Cursor, row: sqlite3.Row):
     return {

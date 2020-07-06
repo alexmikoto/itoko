@@ -16,11 +16,11 @@ from flask import (
 
 from itoko.fs.storage import FSStorageType, FSStorage
 from itoko.fs.generators import default_key_generator
-from itoko.fs.format.v1 import ItokoV1FormatReader
-from itoko.fs.format.v2 import ItokoV2FormatReader, ItokoV2FormatFile
 from itoko.crypto.exc import DecryptionError
 from itoko.api.util import request_wants_json, get_content_disposition
 from itoko.shorten import shorten_filename, find_shortened
+
+__all__ = ["api_blueprint"]
 
 api_blueprint = Blueprint("api", __name__, template_folder="templates")
 

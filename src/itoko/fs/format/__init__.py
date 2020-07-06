@@ -5,6 +5,8 @@ import magic
 
 from itoko.fs.generators import default_filename_generator
 
+__all__ = ["FormatReader", "FormatFile"]
+
 
 class FormatReader(ABC):
     @abstractmethod
