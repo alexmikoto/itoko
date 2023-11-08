@@ -38,6 +38,7 @@ INLINE_MIMETYPES = [
     "video/webm",
     "video/3gpp",
     "video/3gpp2",
+    "video/quicktime",
 ]
 
 

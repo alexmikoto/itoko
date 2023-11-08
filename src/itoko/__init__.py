@@ -9,7 +9,7 @@ from itoko.db import db, init_db
 from itoko.api import api_blueprint
 from itoko.ui import ui_blueprint
 
-__version__ = "0.3.4"
+__version__ = "1.0.0"
 
 
 def make_app():

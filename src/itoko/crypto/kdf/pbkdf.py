@@ -33,7 +33,7 @@ class PBKDF(KDF):
         :param salt: PBKDF2 salt value.
         """
         kdf = PBKDF2HMAC(
-            algorithm=hashes.SHA256,
+            algorithm=hashes.SHA256(),
             length=self.key_length,
             salt=salt,
             iterations=self.iterations,

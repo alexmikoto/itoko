@@ -2,7 +2,7 @@
 Copy-pasted from http://flask.pocoo.org/docs/1.0/extensiondev/
 """
 import sqlite3
-from flask import current_app, _app_ctx_stack
+from flask import current_app, g
 
 __all__ = ["SQLite3"]
 
@@ -27,20 +27,19 @@ class SQLite3(object):
         app.teardown_appcontext(self.teardown)
 
     def connect(self):
-        return sqlite3.connect(current_app.config['SQLITE3_DATABASE'])
+        return sqlite3.connect(
+            (self.app or current_app).config['SQLITE3_DATABASE']
+        )
 
     def teardown(self, exception):
-        ctx = _app_ctx_stack.top
-        if hasattr(ctx, 'sqlite3_db'):
-            ctx.sqlite3_db.close()
+        if hasattr(g, '_sqlite3_db'):
+            g._sqlite3_db.close()
 
     @property
     def connection(self):
-        ctx = _app_ctx_stack.top
-        if ctx is not None:
-            if not hasattr(ctx, 'sqlite3_db'):
-                ctx.sqlite3_db = self.connect()
-            return ctx.sqlite3_db
+        if not hasattr(g, '_sqlite3_db'):
+            g._sqlite3_db = self.connect()
+        return g._sqlite3_db
 
     def query(self, query: str, args=(), one=False):
         cur = self.connection.execute(query, args)
